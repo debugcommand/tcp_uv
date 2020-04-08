@@ -22,4 +22,6 @@ tcp_uv--|
       uvnet--libuv封装
       
       redis--hiredis源文件
-      
+
+tcp server and client 测试结果：
+最高连接数10000，未出现内存及CPU高峰值
