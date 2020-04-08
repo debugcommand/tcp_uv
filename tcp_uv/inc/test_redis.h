@@ -1,8 +1,8 @@
 #ifndef _TEST_REDIS_H_
 #define _TEST_REDIS_H_
-#include "Redis/hiredis.h"
-#include "Redis\async.h"
-#include "UVNet\tcpclient.h"
+#include "redis/hiredis.h"
+#include "redis/async.h"
+#include "uvnet/tcpclient.h"
 
 using namespace UVNet;
 class test_redis

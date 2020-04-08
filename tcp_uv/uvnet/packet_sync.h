@@ -89,6 +89,7 @@ public:
         }
     }
     void recvdata(const unsigned char* data, int len) { //接收到数据，把数据保存在circulebuffer_ 
+        char* pReadData = nullptr;
         if (data == nullptr||len <= 0|| truepacketlen+len > MAX_BUFFER_SIZE)
         {
             goto _CLOSE;
@@ -99,7 +100,7 @@ public:
         {
             return;
         }
-        char* pReadData = thread_readdata.base;
+        pReadData = thread_readdata.base;
         while (truepacketlen > 0)
         {
             if (PARSE_NOTHING == parsetype) {//先解析头

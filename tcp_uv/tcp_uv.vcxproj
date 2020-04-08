@@ -29,7 +29,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -84,12 +84,18 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\inc;$(ProjectDir)..\library\include;$(ProjectDir)..\library\include\libuv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <PostBuildEvent>
-      <Command>mkdir "$(ProjectDir)..\..\bin\"
-xcopy/AFRSY "$(TargetPath)" "$(ProjectDir)..\..\bin\"
+      <Command>mkdir "$(ProjectDir)..\bin\"
+xcopy/AFRSY "$(TargetPath)" "$(ProjectDir)..\bin\"
 </Command>
     </PostBuildEvent>
+    <Link>
+      <AdditionalLibraryDirectories>$(ProjectDir)..\library\static\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ws2_32.lib;libuv.lib;winmm.lib;ssleay32.lib;libeay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -128,6 +134,34 @@ xcopy/AFRSY "$(TargetPath)" "$(ProjectDir)..\..\bin\"
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="redis\async.cpp" />
+    <ClCompile Include="redis\dict.c" />
+    <ClCompile Include="redis\hiredis.cpp" />
+    <ClCompile Include="redis\sds.cpp" />
+    <ClCompile Include="redis\zmalloc.cpp" />
+    <ClCompile Include="src\test.cpp" />
+    <ClCompile Include="src\test_redis.cpp" />
+    <ClCompile Include="src\test_tcpclient.cpp" />
+    <ClCompile Include="src\test_tcpserver.cpp" />
+    <ClCompile Include="uvnet\tcpclient.cpp" />
+    <ClCompile Include="uvnet\tcpserver.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="inc\test_redis.h" />
+    <ClInclude Include="inc\test_tcp.h" />
+    <ClInclude Include="redis\async.h" />
+    <ClInclude Include="redis\dict.h" />
+    <ClInclude Include="redis\hiredis.h" />
+    <ClInclude Include="redis\sds.h" />
+    <ClInclude Include="redis\zmalloc.h" />
+    <ClInclude Include="uvnet\net_base.h" />
+    <ClInclude Include="uvnet\net_packet.h" />
+    <ClInclude Include="uvnet\packet_sync.h" />
+    <ClInclude Include="uvnet\pod_circularbuffer.h" />
+    <ClInclude Include="uvnet\tcpclient.h" />
+    <ClInclude Include="uvnet\tcpserver.h" />
+    <ClInclude Include="uvnet\tcp_protocol.h" />
+    <ClInclude Include="uvnet\thread_uv.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

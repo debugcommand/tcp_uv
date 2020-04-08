@@ -13,5 +13,93 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="uvnet">
+      <UniqueIdentifier>{b93fb1aa-c4b3-4331-8bbc-e76898c1233a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="redis">
+      <UniqueIdentifier>{a056f786-b572-4fae-a8da-69d81bc620f5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\test_tcpserver.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test_redis.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\test_tcpclient.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="uvnet\tcpclient.cpp">
+      <Filter>uvnet</Filter>
+    </ClCompile>
+    <ClCompile Include="uvnet\tcpserver.cpp">
+      <Filter>uvnet</Filter>
+    </ClCompile>
+    <ClCompile Include="redis\sds.cpp">
+      <Filter>redis</Filter>
+    </ClCompile>
+    <ClCompile Include="redis\zmalloc.cpp">
+      <Filter>redis</Filter>
+    </ClCompile>
+    <ClCompile Include="redis\async.cpp">
+      <Filter>redis</Filter>
+    </ClCompile>
+    <ClCompile Include="redis\dict.c">
+      <Filter>redis</Filter>
+    </ClCompile>
+    <ClCompile Include="redis\hiredis.cpp">
+      <Filter>redis</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="inc\test_redis.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\test_tcp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="uvnet\tcp_protocol.h">
+      <Filter>uvnet</Filter>
+    </ClInclude>
+    <ClInclude Include="uvnet\tcpclient.h">
+      <Filter>uvnet</Filter>
+    </ClInclude>
+    <ClInclude Include="uvnet\tcpserver.h">
+      <Filter>uvnet</Filter>
+    </ClInclude>
+    <ClInclude Include="uvnet\thread_uv.h">
+      <Filter>uvnet</Filter>
+    </ClInclude>
+    <ClInclude Include="uvnet\net_base.h">
+      <Filter>uvnet</Filter>
+    </ClInclude>
+    <ClInclude Include="uvnet\net_packet.h">
+      <Filter>uvnet</Filter>
+    </ClInclude>
+    <ClInclude Include="uvnet\packet_sync.h">
+      <Filter>uvnet</Filter>
+    </ClInclude>
+    <ClInclude Include="uvnet\pod_circularbuffer.h">
+      <Filter>uvnet</Filter>
+    </ClInclude>
+    <ClInclude Include="redis\hiredis.h">
+      <Filter>redis</Filter>
+    </ClInclude>
+    <ClInclude Include="redis\sds.h">
+      <Filter>redis</Filter>
+    </ClInclude>
+    <ClInclude Include="redis\zmalloc.h">
+      <Filter>redis</Filter>
+    </ClInclude>
+    <ClInclude Include="redis\async.h">
+      <Filter>redis</Filter>
+    </ClInclude>
+    <ClInclude Include="redis\dict.h">
+      <Filter>redis</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

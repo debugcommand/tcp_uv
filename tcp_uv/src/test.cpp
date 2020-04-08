@@ -2,7 +2,6 @@
 #include <Windows.h>
 #include <sstream>
 #include <stdio.h>
-#include ".\ELoggingHeader.h"
 #include <TCHAR.H>
 #include "test_redis.h"
 
@@ -30,9 +29,7 @@ int main(int argc, char** argv)
 {
 #ifdef DEBUG
     system("pause");
-#endif // DEBUG    
-    char logname[16] = "test_tcp";
-	ELOGINIT(logname);
+#endif // DEBUG
     //commandline///////////////////
     auto GetCmdParam = [&](int idx) {
         return idx < argc ? argv[idx] : NULL;

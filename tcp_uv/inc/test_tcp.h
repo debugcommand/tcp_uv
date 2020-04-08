@@ -3,8 +3,8 @@
 #define _TEST_TCP_H_
 #include <iostream>
 #include <string>
-#include "UVNet\tcpclient.h"
-#include "UVNet\tcpserver.h"
+#include "uvnet/tcpclient.h"
+#include "uvnet/tcpserver.h"
 
 using namespace std;
 using namespace UVNet;

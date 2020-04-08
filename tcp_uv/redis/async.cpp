@@ -40,7 +40,6 @@
 #include "async.h"
 #include "dict.c"
 #include "sds.h"
-#include "ELoggingHeader.h"
 
 #ifdef _WIN32
 #define strcasecmp _stricmp
@@ -497,7 +496,7 @@ void redisAsyncContextWrapper::redisProcessCallbacks(){
              * doesn't know what the server will spit out over the wire. */
 			redisReply* pReply = (redisReply*)reply;
 			if (pReply->type == REDIS_REPLY_ERROR){
-				ELOG(LOG_ERROR, "RedisError for %s", pReply->str);
+				//ELOG(LOG_ERROR, "RedisError for %s", pReply->str);
 			}
 			
             c->reader->fn->freeObject(reply);
