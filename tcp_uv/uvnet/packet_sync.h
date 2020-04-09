@@ -25,6 +25,7 @@ socket有数据到达时，调用packet.recvdata((const unsigned char*)buf,bufsi
 #endif
 
 typedef void (*GetFullPacket)(const NetPacket& packethead, const unsigned char* packetdata, void* userdata);
+typedef void (*GetData)(const unsigned char* data, unsigned int lenght, void* userdata);
 typedef void (*CBClose)(void* userdata);
 #ifndef MAX_BUFFER_SIZE
 #define MAX_BUFFER_SIZE (1024*10)
@@ -33,11 +34,13 @@ typedef void (*CBClose)(void* userdata);
 class PacketSync
 {
 public:
-    PacketSync(): packet_cb_(NULL), packetcb_userdata_(NULL) {
+    PacketSync(): packet_cb_(nullptr), packetcb_userdata_(nullptr),data_cb_(nullptr) {
         thread_readdata = uv_buf_init((char*)malloc(MAX_BUFFER_SIZE), MAX_BUFFER_SIZE); //负责从circulebuffer_读取数据
         thread_packetdata = uv_buf_init((char*)malloc(MAX_BUFFER_SIZE), MAX_BUFFER_SIZE); //负责从circulebuffer_读取packet 中data部分
         truepacketlen = 0;//readdata有效数据长度
         parsetype = PARSE_NOTHING;
+        usenetpacket = true;
+        needparse = true;
     }
     virtual ~PacketSync() {
         free(thread_readdata.base);
@@ -45,52 +48,77 @@ public:
     }
 
 public:
-#if 0
-    void recvmsg(const unsigned char* data, int len) {
-        truepacketlen += len;
-        if (truepacketlen < sizeof(int))
-        {
-            return;
-        }
-        char* pData = thread_readdata.base;
-        while (truepacketlen > 0)
-        {
-            int nUsed = 0;
-            //解析，可以引入函数指针
-            {
-                int totLength = *(int*)pData;
-                if (totLength <= truepacketlen) {
-                    nUsed = totLength;
-                }
-                else
-                {
-                    break;
-                }
-
-                memcpy(&theMsg, pData, nUsed);
-                if (this->msg_cb_) {
-                    this->msg_cb_(theMsg, theMsg.GetLenght(), this->packetcb_userdata_);
-                }
-
-                pData += nUsed;
-                truepacketlen -= nUsed;
-            }
-        }
-
-        if (truepacketlen > 0 && (pData != thread_readdata.base))
-        {
-            memmove(thread_readdata.base, pData, truepacketlen);
-        }
-}
-#endif // 0
     void resetdata(char* dest,char* src ,int len){
         if (dest != src && len > 0) {
             memmove(dest, src, len);
         }
     }
+
     void recvdata(const unsigned char* data, int len) { //接收到数据，把数据保存在circulebuffer_ 
+        if (usenetpacket)
+        {
+            netpacket_parse(data, len);
+        }
+        else
+        {
+            length_parse(data, len);
+        }
+    }
+
+    void length_parse(const unsigned char* data, int len) {
         char* pReadData = nullptr;
-        if (data == nullptr||len <= 0|| truepacketlen+len > MAX_BUFFER_SIZE)
+        int totLength = 0;
+        if (data == nullptr || len <= 0 || truepacketlen + len > MAX_BUFFER_SIZE)
+        {
+            goto _CLOSE;
+        }
+        memcpy(thread_readdata.base + truepacketlen, data, len);
+        truepacketlen += len;
+        pReadData = thread_readdata.base;        
+        while (truepacketlen > 0)
+        {
+            totLength = truepacketlen;
+            if (needparse)
+            { 
+                if (totLength < LENGTH_HEADLEN)
+                {
+                    return;
+                }
+                totLength = *(int*)pReadData;
+            }
+
+            if (totLength < 0|| totLength > MAX_BUFFER_SIZE)
+            {
+                goto _CLOSE;
+            }
+            else if (totLength <= truepacketlen) {
+                if (thread_packetdata.len < totLength) {//检测正式数据buff大小
+                    thread_packetdata.base = (char*)realloc(thread_packetdata.base, totLength);
+                    thread_packetdata.len = totLength;
+                }
+
+                memcpy(thread_packetdata.base, thread_readdata.base, totLength);
+
+                pReadData += totLength;
+                truepacketlen -= totLength;
+                //缓冲位置重置
+                resetdata(thread_readdata.base, pReadData, truepacketlen);
+                //回调帧数据给用户
+                if (this->data_cb_) {
+                    this->data_cb_((const unsigned char*)thread_packetdata.base, totLength, this->packetcb_userdata_);
+                }
+                continue;
+            }
+            break;
+        }
+        return;
+    _CLOSE:
+        call_close_(this->packetcb_userdata_);
+    }
+
+    void netpacket_parse(const unsigned char* data, int len) {
+        char* pReadData = nullptr;
+        if (data == nullptr || len <= 0 || truepacketlen + len > MAX_BUFFER_SIZE)
         {
             goto _CLOSE;
         }
@@ -176,22 +204,33 @@ public:
     _CLOSE:
         call_close_(this->packetcb_userdata_);
     }
+
     void SetPacketCB(GetFullPacket pfun, CBClose pclose, void* userdata) {
         packet_cb_ = pfun;
         call_close_ = pclose;
         packetcb_userdata_ = userdata;
+        usenetpacket = true;
+    }
+
+    void SetDataCB(GetData pFun, CBClose pclose, void* userdata, bool _prase) {
+        data_cb_ = pFun;
+        call_close_ = pclose;
+        packetcb_userdata_ = userdata;
+        usenetpacket = false;
+        needparse = _prase;
     }
 private:
     GetFullPacket packet_cb_;//回调函数
+    GetData       data_cb_;//回调函数
     CBClose       call_close_;//回调关闭
     void*         packetcb_userdata_;//回调函数所带的自定义数据
-
     enum {
-        PARSE_HEAD,
+        PARSE_HEAD  = 0,
         PARSE_NOTHING,
     };
     int parsetype;
-    int getdatalen;
+    bool usenetpacket; //是否使用netpacket作为协议头
+    bool needparse;
     uv_buf_t  thread_readdata;//负责从circulebuffer_读取数据
     uv_buf_t  thread_packetdata;//负责从circulebuffer_读取packet 中data部分
     int truepacketlen;//readdata有效数据长度
@@ -245,7 +284,7 @@ typedef void (*ServerRecvCB)(int clientid, const NetPacket& packethead, const un
 
 //TCPClient接收到服务器数据回调给用户
 typedef void (*ClientRecvCB)(const NetPacket& packethead, const unsigned char* buf, void* userdata);
-
+typedef void (*ClientRecvBufCB)(const unsigned char* buf, unsigned int lenght,void* userdata);
 //连接成功的外部回调
 typedef void(*ConnectedCB)(void* userdata);
 //网络事件类型

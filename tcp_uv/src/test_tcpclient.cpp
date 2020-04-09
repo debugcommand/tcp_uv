@@ -65,7 +65,7 @@ int test_tcpclient::RunClient(std::string ip,int port,int cli_count)
         pClients[i] = new TCPClient();
         pClients[i]->SetRecvCB(ReadCB, pClients[i]);
         pClients[i]->SetClosedCB(CloseCB, pClients[i]);
-        if (!pClients[i]->Connect(serverip, port)) {
+        if (!pClients[i]->Connect(serverip, port,true,true)) {
             printf("connect error:%s\n", pClients[i]->GetLastErrMsg());
         } else {
             printf("client(%p) connect succeed.\n", pClients[i]);
@@ -85,7 +85,7 @@ int test_tcpclient::RunClient(std::string ip,int port,int cli_count)
                 //sprintf(senddata, "main loop: client(%p) call %d", pClients[i], call_time);
                 //packet.datalen = (std::min)(strlen(senddata), sizeof(senddata) - 1);
                 std::string str = PacketData(packet, (const unsigned char*)senddata);
-                if (pClients[i]->Send(&str[0], str.length()) <= 0) {
+                if (!pClients[i]->Send(&str[0], str.length())) {
                     printf("main loop:(%p)send error.%s\n", pClients[i], pClients[i]->GetLastErrMsg());
                 }
                 else {

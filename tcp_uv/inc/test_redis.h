@@ -12,10 +12,16 @@ public:
     ~test_redis();
     bool Connect(char* host, unsigned short port);
     static void CloseCB(int clientid, void* userdata);
-    static void ReadCB(const NetPacket& packet, const unsigned char* buf, void* userdata);
+    static void ReadCB(const unsigned char* buf,unsigned int lenght, void* userdata);
     static void AfterConnect(void* userdata);
 
     void RunRedis(char* host, unsigned short port);
+
+    void  redisSetCallBack(redisAsyncContext* predisAsyncContext, redisReply* predisReply, void* pData);
+    void  redisGetCallBack(redisAsyncContext* predisAsyncContext, redisReply* predisReply, void* pData);
+
+    void HMSETTest();
+    void HMGetTest();
 private:    
     TCPClient*                pClient;
 };

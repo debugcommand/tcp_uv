@@ -58,6 +58,7 @@ typedef struct _NetPacket {//传输自定义数据包头结构
 #endif // NETPACKET_CHECK
 }NetPacket;
 #define NET_PACKAGE_HEADLEN sizeof(NetPacket)//包头长度
+#define LENGTH_HEADLEN sizeof(int32_t)//头长度
 #pragma pack()//将当前字节对齐值设为默认值(通常是4)
 
 //NetPackage转为char*数据

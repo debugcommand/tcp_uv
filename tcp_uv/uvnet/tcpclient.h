@@ -69,12 +69,13 @@ public:
 	static void StopLog();
 public:
     void SetRecvCB(ClientRecvCB pfun, void* userdata);//set recv cb
+    void SetRecvBufCB(ClientRecvBufCB pfun, void* userdata);//set recv buf(no netpacket) cb
     void SetClosedCB(TcpCloseCB pfun, void* userdata);//set close cb.
 	void SetReconnectCB(ReconnectCB pfun, void* userdata);//set reconnect cb
     void SetConnectedCB(ConnectedCB pfun, void* userdata);//set connnected cb
-    bool Connect(const char* ip, int port);//connect the server, ipv4
-    bool Connect6(const char* ip, int port);//connect the server, ipv6
-    int  Send(const char* data, std::size_t len);//send data to server
+    bool Connect(const char* ip, int port,bool usenetpacket, bool needparse);//connect the server, ipv4
+    bool Connect6(const char* ip, int port, bool usenetpacket,bool needparse);//connect the server, ipv6
+    bool Send(const char* data, std::size_t len);//send data to server
     void Close(int flag = 0);//send close command. verify IsClosed for real closed
     bool IsClosed() {//verify if real closed
         return isclosed_;
@@ -93,7 +94,7 @@ public:
     bool IsHangUp() { return ishangup; }
     void SetHangeUp(bool b) { ishangup = b; }
 protected:
-    bool init();
+    bool init(bool usenetpacket,bool needprase);
     void closeinl();//real close fun
     bool run(int status = UV_RUN_DEFAULT);
 	void send_inl(uv_write_t* req = NULL);//real send data fun
@@ -107,6 +108,7 @@ protected:
 	static void AsyncCB(uv_async_t* handle);//async close
 	static void CloseWalkCB(uv_handle_t* handle, void* arg);//close all handle in loop
     static void GetPacket(const NetPacket& packethead, const unsigned char* packetdata, void* userdata);
+    static void GetData(const unsigned char* data, unsigned int lenght, void* userdata);
 	static void ReconnectTimer(uv_timer_t* handle);
     static void CBClose(void* userdata);
 private:
@@ -134,6 +136,7 @@ private:
     PodCircularBuffer<char> write_circularbuf_;//the data prepare to send
 
     ClientRecvCB recvcb_;
+    ClientRecvBufCB recvbufcb_;
     void* recvcb_userdata_;
 
     TcpCloseCB closedcb_;

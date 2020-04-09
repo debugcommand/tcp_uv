@@ -40,7 +40,8 @@ void FreeCliWriteParam(cli_write_param* param)
 
 /*****************************************TCP Client*************************************************************/
 TCPClient::TCPClient()
-    : recvcb_(nullptr), recvcb_userdata_(nullptr), closedcb_(nullptr), closedcb_userdata_(nullptr)
+    : recvcb_(nullptr), recvbufcb_(nullptr), recvcb_userdata_(nullptr)
+    , closedcb_(nullptr), closedcb_userdata_(nullptr)
     , connectstatus_(CONNECT_DIS), write_circularbuf_(MAX_BUFFER_SIZE)
     , isclosed_(true), isuseraskforclosed_(false)
     , reconnectcb_(nullptr), reconnect_userdata_(nullptr)
@@ -85,7 +86,7 @@ TCPClient::~TCPClient()
 #endif // 0    
 }
 
-bool TCPClient::init()
+bool TCPClient::init(bool usenetpacket, bool needprase)
 {
     if (!isclosed_) {
         return true;
@@ -110,8 +111,14 @@ bool TCPClient::init()
     }
     client_handle_->tcphandle.data = client_handle_;
     client_handle_->parent_server = this;
-
-    client_handle_->packet_->SetPacketCB(GetPacket, CBClose, client_handle_);
+    if (usenetpacket)
+    {
+        client_handle_->packet_->SetPacketCB(GetPacket, CBClose, client_handle_);
+    }
+    else {
+        client_handle_->packet_->SetDataCB(GetData, CBClose, client_handle_, needprase);
+    }
+    
     iret = uv_timer_init(&loop_, &reconnect_timer_);
     if (iret) {
         errmsg_ = GetUVError(iret);
@@ -187,10 +194,10 @@ bool TCPClient::SetKeepAlive(int enable, unsigned int delay)
     return true;
 }
 
-bool TCPClient::Connect(const char* ip, int port)
+bool TCPClient::Connect(const char* ip, int port, bool usenetpacket, bool needparse)
 {
     closeinl();
-    if (!init()) {
+    if (!init(usenetpacket, needparse)) {
         return false;
     }
     connectip_ = ip;
@@ -240,10 +247,10 @@ bool TCPClient::Connect(const char* ip, int port)
     }
 }
 
-bool TCPClient::Connect6(const char* ip, int port)
+bool TCPClient::Connect6(const char* ip, int port, bool usenetpacket, bool needparse)
 {
     closeinl();
-    if (!init()) {
+    if (!init(usenetpacket, needparse)) {
         return false;
     }
     connectip_ = ip;
@@ -341,14 +348,14 @@ void TCPClient::AfterConnect(uv_connect_t* handle, int status)
     }
 }
 
-int TCPClient::Send(const char* data, std::size_t len)
+bool TCPClient::Send(const char* data, std::size_t len)
 {
     if (!data || len <= 0) {
         errmsg_ = "send data is null or len less than zero.";
 #if 0
         LOGE(errmsg_);
 #endif // 0 
-        return 0;
+        return false;
     }
     uv_async_send(&async_handle_);
     size_t iret = 0;
@@ -364,12 +371,17 @@ int TCPClient::Send(const char* data, std::size_t len)
         }
     }
     uv_async_send(&async_handle_);
-    return iret;
+    return iret > 0;
 }
 
 void TCPClient::SetRecvCB(ClientRecvCB pfun, void* userdata)
 {
     recvcb_ = pfun;
+    recvcb_userdata_ = userdata;
+}
+
+void TCPClient::SetRecvBufCB(ClientRecvBufCB pfun, void* userdata) {
+    recvbufcb_ = pfun;
     recvcb_userdata_ = userdata;
 }
 
@@ -447,7 +459,7 @@ void TCPClient::AfterSend(uv_write_t* req, int status)
 #if 0
         LOGE("send error:" << GetUVError(status));        
 #endif // 0
-        fprintf(stderr, "send error %s\n", GetUVError(status));
+        fprintf(stderr, "send error %s\n", GetUVError(status).c_str());
         return;
     }
     theclass->send_inl(req);
@@ -495,6 +507,16 @@ void TCPClient::GetPacket(const NetPacket& packethead, const unsigned char* pack
     TCPClient* parent = (TCPClient*)theclass->parent_server;
     if (parent->recvcb_) {//cb the data to user
         parent->recvcb_(packethead, packetdata, parent->recvcb_userdata_);
+    }
+}
+
+void TCPClient::GetData(const unsigned char* data, unsigned int lenght, void* userdata)
+{
+    assert(userdata);
+    TcpClientCtx* theclass = (TcpClientCtx*)userdata;
+    TCPClient* parent = (TCPClient*)theclass->parent_server;
+    if (parent->recvbufcb_) {//cb the data to user
+        parent->recvbufcb_(data, lenght,parent->recvcb_userdata_);
     }
 }
 
