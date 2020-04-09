@@ -122,6 +122,11 @@ xcopy/AFRSY "$(TargetPath)" "$(ProjectDir)..\bin\"
       <AdditionalLibraryDirectories>$(ProjectDir)..\library\static\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>ws2_32.lib;libuv.lib;ssleay32.lib;libeay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>mkdir "$(ProjectDir)..\bin\"
+xcopy/AFRSY "$(TargetPath)" "$(ProjectDir)..\bin\"
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
