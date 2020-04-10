@@ -1,20 +1,19 @@
 ﻿/***************************************
 * @file     circularbuffer.h
-* @brief    环形缓冲区-支持存储pod数据类型，直接用memcpy连续复制多个数据
+* @brief    环形缓冲区
 * @details  原作者地址：http://blog.csdn.net/devday/article/details/5258697
 ****************************************/
 #ifndef _CIRCULAR_BUFFER_H_
 #define _CIRCULAR_BUFFER_H_
 #include <assert.h>
 #include <memory.h>
-template<typename T>
 class CircularBuffer
 {
 public:
     CircularBuffer(int capacity)
         :m_nBufSize(capacity),m_nReadPos(0),m_nWritePos(0)
         ,m_bEmpty(true),m_bFull(false) {
-        m_pBuf = new T[m_nBufSize];
+        m_pBuf = new char[m_nBufSize];
     }
     virtual ~CircularBuffer() {
         delete[] m_pBuf;
@@ -52,17 +51,17 @@ public:
         return m_nBufSize;
     }
 	
-	T* data() {
+    char* data() {
 		return m_pBuf;
 	}
 
-	const T* data() const{
+	const char* data() const{
 		return m_pBuf;
 	}
     /************************************************************************/
     /* 向缓冲区写入数据，返回实际写入的对象数                               */
     /************************************************************************/
-    int write(const T* buf, int count) {
+    int write(const char* buf, int count) {
         if(count <= 0) {
             return 0;
         }
@@ -144,7 +143,7 @@ public:
     /************************************************************************/
     /* 从缓冲区读数据，返回实际读取的字节数                                 */
     /************************************************************************/
-    int read(T* buf, int count) {
+    int read(char* buf, int count) {
         if(count <= 0) {
             return 0;
         }
@@ -160,14 +159,14 @@ public:
             */
             int leftcount = m_nBufSize - m_nReadPos;
             if(leftcount > count) {
-                memcpy(buf, &m_pBuf[m_nReadPos], count * sizeof(T));
+                memcpy(buf, &m_pBuf[m_nReadPos], count);
                 m_nReadPos += count;
                 m_bEmpty = (m_nReadPos == m_nWritePos);
                 return count;
             } else {
-                memcpy(buf, &m_pBuf[m_nReadPos], leftcount * sizeof(T));
+                memcpy(buf, &m_pBuf[m_nReadPos], leftcount);
                 m_nReadPos = (m_nWritePos > count - leftcount) ? count - leftcount : m_nWritePos;
-                memcpy(&buf[leftcount], m_pBuf, m_nReadPos * sizeof(T));
+                memcpy(&buf[leftcount], m_pBuf, m_nReadPos);
                 m_bEmpty = (m_nReadPos == m_nWritePos);
                 return leftcount + m_nReadPos;
             }
@@ -179,7 +178,7 @@ public:
             */
             int leftcount = m_nWritePos - m_nReadPos;
             int c = (leftcount > count) ? count : leftcount;
-            memcpy(buf, &m_pBuf[m_nReadPos], c * sizeof(T));
+            memcpy(buf, &m_pBuf[m_nReadPos], c);
             m_nReadPos += c;
             m_bEmpty = (m_nReadPos == m_nWritePos);
             assert(m_nReadPos <= m_nBufSize);
@@ -194,16 +193,16 @@ public:
             */
             int leftcount = m_nBufSize - m_nReadPos;
             if(leftcount > count) { // 未读缓冲区够大，直接读取数据
-                memcpy(buf, &m_pBuf[m_nReadPos], count * sizeof(T));
+                memcpy(buf, &m_pBuf[m_nReadPos], count);
                 m_nReadPos += count;
                 m_bEmpty = (m_nReadPos == m_nWritePos);
                 assert(m_nReadPos <= m_nBufSize);
                 assert(m_nWritePos <= m_nBufSize);
                 return count;
             } else {   // 未读缓冲区不足，需回到缓冲区头开始读
-                memcpy(buf, &m_pBuf[m_nReadPos], leftcount * sizeof(T));
+                memcpy(buf, &m_pBuf[m_nReadPos], leftcount);
                 m_nReadPos = (m_nWritePos >= count - leftcount) ? count - leftcount : m_nWritePos;
-                memcpy(&buf[leftcount], m_pBuf, m_nReadPos * sizeof(T));
+                memcpy(&buf[leftcount], m_pBuf, m_nReadPos);
                 m_bEmpty = (m_nReadPos == m_nWritePos);
                 assert(m_nReadPos <= m_nBufSize);
                 assert(m_nWritePos <= m_nBufSize);
@@ -214,7 +213,7 @@ public:
 
 private:
     bool m_bEmpty, m_bFull;
-    T * m_pBuf;
+    char* m_pBuf;
     int m_nBufSize;
     int m_nReadPos;
     int m_nWritePos;
