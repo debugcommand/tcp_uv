@@ -20,16 +20,16 @@
 #define TCPCLIENT_H
 #include <string>
 #include <list>
-#include "packet_sync.h"
-#include "pod_circularbuffer.h"
+#include "msg_parse.h"
+#include "circularbuffer.h"
 
 namespace UVNet
 {
 /**********************************************Client****************************************************/
 typedef struct _tcpclient_ctx {
     uv_tcp_t tcphandle;//store this on data
-    uv_write_t write_req;//store this on data
-    PacketSync* packet_;//store this on userdata
+    uv_write_t write_req;//store this on data    
+    MessageParse* parse_;//store this on userdata
     uv_buf_t read_buf_;
     int clientid;
     void* parent_server;//store TCPClient point
@@ -107,7 +107,7 @@ protected:
     static void AfterClientClose(uv_handle_t* handle);
 	static void AsyncCB(uv_async_t* handle);//async close
 	static void CloseWalkCB(uv_handle_t* handle, void* arg);//close all handle in loop
-    static void GetPacket(const NetPacket& packethead, const unsigned char* packetdata, void* userdata);
+    static void GetMsg(const MessageHeader& header, const unsigned char* realdata, void* userdata);
     static void GetData(const unsigned char* data, unsigned int lenght, void* userdata);
 	static void ReconnectTimer(uv_timer_t* handle);
     static void CBClose(void* userdata);
@@ -133,7 +133,7 @@ private:
     //send param
     uv_mutex_t mutex_writebuf_;//mutex of writebuf_list_
 	std::list<cli_write_param*> writeparam_list_;//Availa write_t
-    PodCircularBuffer<char> write_circularbuf_;//the data prepare to send
+    CircularBuffer<char> write_circularbuf_;//the data prepare to send
 
     ClientRecvCB recvcb_;
     ClientRecvBufCB recvbufcb_;

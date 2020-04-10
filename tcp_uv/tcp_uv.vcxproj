@@ -159,9 +159,9 @@ xcopy/AFRSY "$(TargetPath)" "$(ProjectDir)..\bin\"
     <ClInclude Include="redis\sds.h" />
     <ClInclude Include="redis\zmalloc.h" />
     <ClInclude Include="uvnet\net_base.h" />
-    <ClInclude Include="uvnet\net_packet.h" />
-    <ClInclude Include="uvnet\packet_sync.h" />
-    <ClInclude Include="uvnet\pod_circularbuffer.h" />
+    <ClInclude Include="uvnet\net_msg.h" />
+    <ClInclude Include="uvnet\msg_parse.h" />
+    <ClInclude Include="uvnet\circularbuffer.h" />
     <ClInclude Include="uvnet\tcpclient.h" />
     <ClInclude Include="uvnet\tcpserver.h" />
     <ClInclude Include="uvnet\tcp_protocol.h" />

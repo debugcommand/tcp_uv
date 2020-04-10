@@ -24,7 +24,7 @@ void test_tcpclient::CloseCB(int clientid, void* userdata)
 }
 
 static unsigned long maxPing = 0;
-void test_tcpclient::ReadCB(const NetPacket& packet, const unsigned char* buf, void* userdata)
+void test_tcpclient::ReadCB(const MessageHeader& header, const unsigned char* buf, void* userdata)
 {
 #if 0
     printf("ReadCB:call time %d\n", ++call_time);
@@ -74,17 +74,17 @@ int test_tcpclient::RunClient(std::string ip,int port,int cli_count)
     
     while (!is_exist) {
         DWORD curTime = timeGetTime();
-        NetPacket packet;
-        packet.type = 1;
+        MessageHeader header;
+        header.type = 1;
         sprintf(senddata, "%ld", curTime);
-        packet.datalen = packet.datalen = (std::min)(strlen(senddata), sizeof(senddata) - 1);
+        header.datalen = header.datalen = (std::min)(strlen(senddata), sizeof(senddata) - 1);
         for (int i = 0; i < clientsize; ++i) {
             if (pClients[i]&& !pClients[i]->IsClosed()&& !pClients[i]->IsHangUp())
             {
                 //memset(senddata, 0, sizeof(senddata));
                 //sprintf(senddata, "main loop: client(%p) call %d", pClients[i], call_time);
                 //packet.datalen = (std::min)(strlen(senddata), sizeof(senddata) - 1);
-                std::string str = PacketData(packet, (const unsigned char*)senddata);
+                std::string str = PackData(header, (const unsigned char*)senddata);
                 if (!pClients[i]->Send(&str[0], str.length())) {
                     printf("main loop:(%p)send error.%s\n", pClients[i], pClients[i]->GetLastErrMsg());
                 }

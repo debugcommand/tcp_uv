@@ -345,7 +345,7 @@ void TCPServer::AcceptConnection(uv_stream_t* server, int status)
 #endif // 0
         return;
     }
-    tmptcp->packet_->SetPacketCB(GetPacket,CBClose,tmptcp);
+    tmptcp->parse_->SetMsgCB(GetMsg,CBClose,tmptcp);
     iret = uv_read_start((uv_stream_t*)&tmptcp->tcphandle, AllocBufferForRecv, AfterRecv);
     if (iret) {
         uv_close((uv_handle_t*)&tmptcp->tcphandle, TCPServer::RecycleTcpHandle);
@@ -687,7 +687,7 @@ void AfterRecv(uv_stream_t* handle, ssize_t nread, const uv_buf_t* buf)
     } else if (0 == nread)  {/* Everything OK, but nothing read. */
 
     } else {
-        theclass->packet_->recvdata((const unsigned char*)buf->base, nread);
+        theclass->parse_->recvdata((const unsigned char*)buf->base, nread);
     }
 }
 
@@ -708,7 +708,7 @@ void AfterSend(uv_write_t* req, int status)
     }
 }
 
-void GetPacket(const NetPacket& packethead, const unsigned char* packetdata, void* userdata)
+void GetMsg(const MessageHeader& header, const unsigned char* realdata, void* userdata)
 {
 #if 0
     fprintf(stdout, "Get control packet type %d\n", packethead.type);    
@@ -716,7 +716,7 @@ void GetPacket(const NetPacket& packethead, const unsigned char* packetdata, voi
     assert(userdata);
     TcpConnCtx* theclass = (TcpConnCtx*)userdata;
     TCPServer* parent = (TCPServer*)theclass->parent_server;
-    const std::string& senddata = parent->protocol_->ParsePacket(packethead, packetdata);
+    const std::string& senddata = parent->protocol_->ParseMessage(header, realdata);
     //fprintf(stdout, "Get control packet type %d,clientid:%d\n", packethead.type,theclass->clientid);
     parent->sendinl(senddata, theclass);
     return;
@@ -733,7 +733,7 @@ void CBClose(void* userdata)
 TcpConnCtx* AllocTcpConnCtx(void* parentserver)
 {
     TcpConnCtx* ctx = (TcpConnCtx*)malloc(sizeof(*ctx));
-    ctx->packet_ = new PacketSync;
+    ctx->parse_ = new MessageParse;
     ctx->read_buf_.base = (char*)malloc(BUFFER_SIZE);
     ctx->read_buf_.len = BUFFER_SIZE;
     ctx->parent_server = parentserver;
@@ -743,7 +743,7 @@ TcpConnCtx* AllocTcpConnCtx(void* parentserver)
 
 void FreeTcpConnCtx(TcpConnCtx* ctx)
 {
-    delete ctx->packet_;
+    delete ctx->parse_;
     free(ctx->read_buf_.base);
     free(ctx);
 }

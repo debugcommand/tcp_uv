@@ -15,7 +15,7 @@ public:
     ~test_tcpclient();
 
     static void CloseCB(int clientid, void* userdata);
-    static void ReadCB(const NetPacket& packet, const unsigned char* buf, void* userdata);    
+    static void ReadCB(const MessageHeader& header, const unsigned char* buf, void* userdata);    
     int  RunClient(std::string ip, int port, int cli_count);
     void ProfileReport(int64_t tCurrTime);
 private:

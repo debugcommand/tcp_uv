@@ -7,7 +7,7 @@ namespace UVNet
 TcpClientCtx* AllocTcpClientCtx(void* parentserver)
 {
     TcpClientCtx* ctx = (TcpClientCtx*)malloc(sizeof(*ctx));
-    ctx->packet_ = new PacketSync;
+    ctx->parse_ = new MessageParse;
     ctx->read_buf_.base = (char*)malloc(MAX_BUFFER_SIZE);
     ctx->read_buf_.len = MAX_BUFFER_SIZE;
     ctx->write_req.data = ctx;//store self
@@ -17,7 +17,7 @@ TcpClientCtx* AllocTcpClientCtx(void* parentserver)
 
 void FreeTcpClientCtx(TcpClientCtx* ctx)
 {
-    delete ctx->packet_;
+    delete ctx->parse_;
     free(ctx->read_buf_.base);
     free(ctx);
 }
@@ -113,10 +113,10 @@ bool TCPClient::init(bool usenetpacket, bool needprase)
     client_handle_->parent_server = this;
     if (usenetpacket)
     {
-        client_handle_->packet_->SetPacketCB(GetPacket, CBClose, client_handle_);
+        client_handle_->parse_->SetMsgCB(GetMsg, CBClose, client_handle_);
     }
     else {
-        client_handle_->packet_->SetDataCB(GetData, CBClose, client_handle_, needprase);
+        client_handle_->parse_->SetDataCB(GetData, CBClose, client_handle_, needprase);
     }
     
     iret = uv_timer_init(&loop_, &reconnect_timer_);
@@ -443,7 +443,7 @@ void TCPClient::AfterRecv(uv_stream_t* handle, ssize_t nread, const uv_buf_t* bu
     }
     parent->send_inl(NULL);
     if (nread > 0) {
-        theclass->packet_->recvdata((const unsigned char*)buf->base, nread);
+        theclass->parse_->recvdata((const unsigned char*)buf->base, nread);
     }
 }
 
@@ -500,13 +500,13 @@ void TCPClient::StopLog()
 {    
 }
 
-void TCPClient::GetPacket(const NetPacket& packethead, const unsigned char* packetdata, void* userdata)
+void TCPClient::GetMsg(const MessageHeader& header, const unsigned char* realdata, void* userdata)
 {
     assert(userdata);
     TcpClientCtx* theclass = (TcpClientCtx*)userdata;
     TCPClient* parent = (TCPClient*)theclass->parent_server;
     if (parent->recvcb_) {//cb the data to user
-        parent->recvcb_(packethead, packetdata, parent->recvcb_userdata_);
+        parent->recvcb_(header, realdata, parent->recvcb_userdata_);
     }
 }
 

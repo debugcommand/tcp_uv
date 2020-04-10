@@ -1,22 +1,22 @@
 ﻿/***************************************
-* @file     pod_circularbuffer.h
+* @file     circularbuffer.h
 * @brief    环形缓冲区-支持存储pod数据类型，直接用memcpy连续复制多个数据
 * @details  原作者地址：http://blog.csdn.net/devday/article/details/5258697
 ****************************************/
-#ifndef _POD_CIRCULAR_BUFFER_H_H
-#define _POD_CIRCULAR_BUFFER_H_H
+#ifndef _CIRCULAR_BUFFER_H_
+#define _CIRCULAR_BUFFER_H_
 #include <assert.h>
 #include <memory.h>
 template<typename T>
-class PodCircularBuffer
+class CircularBuffer
 {
 public:
-    PodCircularBuffer(int capacity)
+    CircularBuffer(int capacity)
         :m_nBufSize(capacity),m_nReadPos(0),m_nWritePos(0)
         ,m_bEmpty(true),m_bFull(false) {
         m_pBuf = new T[m_nBufSize];
     }
-    virtual ~PodCircularBuffer() {
+    virtual ~CircularBuffer() {
         delete[] m_pBuf;
     }
 
@@ -141,7 +141,6 @@ public:
             }
         }
     }
-
     /************************************************************************/
     /* 从缓冲区读数据，返回实际读取的字节数                                 */
     /************************************************************************/
@@ -220,7 +219,7 @@ private:
     int m_nReadPos;
     int m_nWritePos;
 private://Noncopyable
-    PodCircularBuffer(const PodCircularBuffer&);
-    const PodCircularBuffer& operator=(const PodCircularBuffer&);
+    CircularBuffer(const CircularBuffer&);
+    const CircularBuffer& operator=(const CircularBuffer&);
 };
-#endif // _POD_CIRCULAR_BUFFER_H_H
+#endif // _CIRCULAR_BUFFER_H_

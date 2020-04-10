@@ -32,7 +32,7 @@ namespace UVNet
 class AcceptClient;
 typedef struct _tcpconn_ctx {
     uv_tcp_t tcphandle;//data filed store this
-    PacketSync* packet_;//userdata filed storethis
+    MessageParse* parse_;//userdata filed storethis
     uv_buf_t read_buf_;
     int clientid;   //server for client
     int logicid;    //for logic index
@@ -159,7 +159,7 @@ public:
     friend static void AllocBufferForRecv(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf);
     friend static void AfterRecv(uv_stream_t* client, ssize_t nread, const uv_buf_t* buf);
     friend static void AfterSend(uv_write_t* req, int status);
-    friend static void GetPacket(const NetPacket& packethead, const unsigned char* packetdata, void* userdata);    
+    friend static void GetMsg(const MessageHeader& header, const unsigned char* realdata, void* userdata);    
     friend static void CBClose(void* userdata);
 };
 
@@ -210,7 +210,7 @@ public:
     friend static void AllocBufferForRecv(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf);
     friend static void AfterRecv(uv_stream_t* client, ssize_t nread, const uv_buf_t* buf);
     friend static void AfterSend(uv_write_t* req, int status);
-    friend static void GetPacket(const NetPacket& packethead, const unsigned char* packetdata, void* userdata);    
+    friend static void GetMsg(const MessageHeader& header, const unsigned char* realdata, void* userdata);
     friend static void CBClose(void* userdata);
 };
 
@@ -218,7 +218,7 @@ public:
 static void AllocBufferForRecv(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf);
 static void AfterRecv(uv_stream_t* client, ssize_t nread, const uv_buf_t* buf);
 static void AfterSend(uv_write_t* req, int status);
-static void GetPacket(const NetPacket& packethead, const unsigned char* packetdata, void* userdata);
+static void GetMsg(const MessageHeader& header, const unsigned char* realdata, void* userdata);
 static void CBClose(void* userdata);
 }
 

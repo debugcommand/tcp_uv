@@ -1,5 +1,5 @@
-#ifndef _NET_PACKET_H_
-#define _NET_PACKET_H_
+#ifndef _NET_MESSAGE_H_
+#define _NET_MESSAGE_H_
 #include <stdint.h>
 #include "net_base.h"
 
@@ -47,50 +47,50 @@ inline bool CharToInt64(const unsigned char* charnum, uint64_t& intnum)
 }
 // 一个数据包的内存结构
 //增加包头与包尾数据，用于检测包的完整性。检验值用于检测包的完全性。
-//|-----head----|-----pack header---------|--------------------pack data----------|-----tail----|
-//|--包头1字节--|--[datalen][type][check]--|--datalen长度的内存数据(根据type去解析)--|--包尾1字节--|
+//|-----header---------------|--------------------real data----------|
+//|--[datalen][type][check]--|--datalen长度的内存数据(根据type去解析)--|
 #pragma pack(1)//将当前字节对齐值设为1
-typedef struct _NetPacket {//传输自定义数据包头结构
+typedef struct _MessageHeader {//传输自定义数据包头结构
     int32_t datalen;        //包数据的内容长度-不包括此包结构和包头尾  :0-3    
     int32_t type;           //包数据的类型                           :4-7
-#ifdef NETPACKET_CHECK
-    unsigned char check[16];//pack data校验值-16字节的md5二进制数据   :8-23
-#endif // NETPACKET_CHECK
-}NetPacket;
-#define NET_PACKAGE_HEADLEN sizeof(NetPacket)//包头长度
+#ifdef MESSAGE_CHECK
+    unsigned char check[16];//msg data校验值-16字节的md5二进制数据   :8-23
+#endif // MESSAGE_CHECK
+}MessageHeader;
+#define MESSAGE_HEADER_LEN sizeof(MessageHeader)//包头长度
 #define LENGTH_HEADLEN sizeof(int32_t)//头长度
 #pragma pack()//将当前字节对齐值设为默认值(通常是4)
 
 //NetPackage转为char*数据
-inline bool NetPacketToChar(const NetPacket& package, unsigned char* chardata) {
-    if (!Int32ToChar((uint32_t)package.datalen, chardata)) {
+inline bool HeaderToChar(const MessageHeader& header,unsigned char* chardata) {
+    if (!Int32ToChar((uint32_t)header.datalen, chardata)) {
         return false;
     }
-    if (!Int32ToChar((uint32_t)package.type, chardata + 4)) {
+    if (!Int32ToChar((uint32_t)header.type, chardata + 4)) {
         return false;
     }
-#ifdef NETPACKET_CHECK
-    memcpy(chardata + 8, package.check, sizeof(package.check));
-#endif // NETPACKET_CHECK
+#ifdef MESSAGE_CHECK
+    memcpy(chardata + 8, header.check, sizeof(package.check));
+#endif // MESSAGE_CHECK
     return true;
 }
 
 //char*转为NetPackage数据，chardata必须有38字节的空间
-inline bool CharToNetPacket(const unsigned char* chardata, NetPacket& package) {
+inline bool CharToHeader(const unsigned char* chardata, MessageHeader& header) {
     uint32_t tmp32;
     if (!CharToInt32(chardata, tmp32)) {
         return false;
     }    
-    package.datalen = tmp32;
+    header.datalen = tmp32;
 
     if (!CharToInt32(chardata + 4, tmp32)) {
         return false;
     }
-    package.type = tmp32;
+    header.type = tmp32;
 
-#ifdef NETPACKET_CHECK
-    memcpy(package.check, chardata + 8, sizeof(package.check));
-#endif // NETPACKET_CHECK
+#ifdef MESSAGE_CHECK
+    memcpy(header.check, chardata + 8, sizeof(package.check));
+#endif // MESSAGE_CHECK
     return true;
 }
-#endif
+#endif //_NET_MESSAGE_H_

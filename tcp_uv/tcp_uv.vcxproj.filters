@@ -77,15 +77,6 @@
     <ClInclude Include="uvnet\net_base.h">
       <Filter>uvnet</Filter>
     </ClInclude>
-    <ClInclude Include="uvnet\net_packet.h">
-      <Filter>uvnet</Filter>
-    </ClInclude>
-    <ClInclude Include="uvnet\packet_sync.h">
-      <Filter>uvnet</Filter>
-    </ClInclude>
-    <ClInclude Include="uvnet\pod_circularbuffer.h">
-      <Filter>uvnet</Filter>
-    </ClInclude>
     <ClInclude Include="redis\hiredis.h">
       <Filter>redis</Filter>
     </ClInclude>
@@ -100,6 +91,15 @@
     </ClInclude>
     <ClInclude Include="redis\dict.h">
       <Filter>redis</Filter>
+    </ClInclude>
+    <ClInclude Include="uvnet\circularbuffer.h">
+      <Filter>uvnet</Filter>
+    </ClInclude>
+    <ClInclude Include="uvnet\net_msg.h">
+      <Filter>uvnet</Filter>
+    </ClInclude>
+    <ClInclude Include="uvnet\msg_parse.h">
+      <Filter>uvnet</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
