@@ -77,11 +77,11 @@ public:
             */
             int leftcount = m_nBufSize - m_nWritePos;
             if(leftcount > count) {
-                memcpy(&m_pBuf[m_nWritePos], buf, count );
+                memcpy(&m_pBuf[m_nWritePos], buf, count);
                 m_nWritePos += count;
                 return count;
             } else {
-                memcpy(&m_pBuf[m_nWritePos], buf, leftcount );
+                memcpy(&m_pBuf[m_nWritePos], buf, leftcount);
                 m_nWritePos = (m_nReadPos > count - leftcount) ? count - leftcount : m_nWritePos;
                 memcpy(m_pBuf, &buf[leftcount], m_nWritePos);
                 m_bFull = (m_nWritePos == m_nReadPos);
@@ -94,30 +94,34 @@ public:
                m_nReadPos                m_nWritePos       (leftcount)
             */
             // 剩余缓冲区大小(从写入位置到缓冲区尾)
-
             int leftcount = m_nBufSize - m_nWritePos;
-            if(leftcount > count) { // 有足够的剩余空间存放
+            if(leftcount > count) { // 有足够的尾部空间存放
                 memcpy(&m_pBuf[m_nWritePos], buf, count);
                 m_nWritePos += count;
                 m_bFull = (m_nReadPos == m_nWritePos);
                 assert(m_nReadPos <= m_nBufSize);
                 assert(m_nWritePos <= m_nBufSize);
                 return count;
-            } else {   // 剩余空间不足
-                // 先填充满剩余空间，再回头找空间存放
-                memcpy(&m_pBuf[m_nWritePos], buf, leftcount);
-                m_nWritePos = (m_nReadPos >= count - leftcount) ? count - leftcount : m_nReadPos;
-                memcpy(m_pBuf, &buf[leftcount], m_nWritePos);
-                m_bFull = (m_nReadPos == m_nWritePos);
-                assert(m_nReadPos <= m_nBufSize);
-                assert(m_nWritePos <= m_nBufSize);
-                return leftcount + m_nWritePos;
+            } else {   // 尾部空间不足
+                // 先确定空间是否足够
+                if (m_nReadPos >= (count - leftcount))
+                {
+                    // 先填充满剩余空间，再回头找空间存放
+                    memcpy(&m_pBuf[m_nWritePos], buf, leftcount);
+                    m_nWritePos = count - leftcount;
+                    memcpy(m_pBuf, &buf[leftcount], m_nWritePos);
+                    m_bFull = (m_nReadPos == m_nWritePos);
+                    assert(m_nReadPos <= m_nBufSize);
+                    assert(m_nWritePos <= m_nBufSize);
+                    return leftcount + m_nWritePos;
+                }
+                return 0;
             }
         } else {
             /*                          == 内存模型 ==
              (unread)                 (read)                     (unread)
             |-------------------|----------------------------|---------------------------|
-                m_nWritePos    (leftcount)    m_nReadPos
+                m_nWritePos    (leftcount)           m_nReadPos
             */
             int leftcount = m_nReadPos - m_nWritePos;
             if(leftcount > count) {
@@ -129,7 +133,9 @@ public:
                 assert(m_nWritePos <= m_nBufSize);
                 return count;
             } else {
-                // 剩余空间不足时要丢弃后面的数据
+                // 剩余空间不足时全部丢弃
+                return 0;
+#if 0
                 memcpy(&m_pBuf[m_nWritePos], buf, leftcount);
                 m_nWritePos += leftcount;
                 m_bFull = (m_nReadPos == m_nWritePos);
@@ -137,6 +143,7 @@ public:
                 assert(m_nReadPos <= m_nBufSize);
                 assert(m_nWritePos <= m_nBufSize);
                 return leftcount;
+#endif
             }
         }
     }
