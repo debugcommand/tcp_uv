@@ -133,7 +133,7 @@ private:
     //send param
     uv_mutex_t mutex_writebuf_;//mutex of writebuf_list_
 	std::list<cli_write_param*> writeparam_list_;//Availa write_t
-    CircularBuffer<char> write_circularbuf_;//the data prepare to send
+    CircularBuffer write_circularbuf_;//the data prepare to send
 
     ClientRecvCB recvcb_;
     ClientRecvBufCB recvbufcb_;

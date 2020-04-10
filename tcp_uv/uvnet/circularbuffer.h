@@ -77,13 +77,13 @@ public:
             */
             int leftcount = m_nBufSize - m_nWritePos;
             if(leftcount > count) {
-                memcpy(&m_pBuf[m_nWritePos], buf, count * sizeof(T));
+                memcpy(&m_pBuf[m_nWritePos], buf, count );
                 m_nWritePos += count;
                 return count;
             } else {
-                memcpy(&m_pBuf[m_nWritePos], buf, leftcount * sizeof(T));
+                memcpy(&m_pBuf[m_nWritePos], buf, leftcount );
                 m_nWritePos = (m_nReadPos > count - leftcount) ? count - leftcount : m_nWritePos;
-                memcpy(m_pBuf, &buf[leftcount], m_nWritePos * sizeof(T));
+                memcpy(m_pBuf, &buf[leftcount], m_nWritePos);
                 m_bFull = (m_nWritePos == m_nReadPos);
                 return leftcount + m_nWritePos;
             }
@@ -97,7 +97,7 @@ public:
 
             int leftcount = m_nBufSize - m_nWritePos;
             if(leftcount > count) { // 有足够的剩余空间存放
-                memcpy(&m_pBuf[m_nWritePos], buf, count * sizeof(T));
+                memcpy(&m_pBuf[m_nWritePos], buf, count);
                 m_nWritePos += count;
                 m_bFull = (m_nReadPos == m_nWritePos);
                 assert(m_nReadPos <= m_nBufSize);
@@ -105,9 +105,9 @@ public:
                 return count;
             } else {   // 剩余空间不足
                 // 先填充满剩余空间，再回头找空间存放
-                memcpy(&m_pBuf[m_nWritePos], buf, leftcount * sizeof(T));
+                memcpy(&m_pBuf[m_nWritePos], buf, leftcount);
                 m_nWritePos = (m_nReadPos >= count - leftcount) ? count - leftcount : m_nReadPos;
-                memcpy(m_pBuf, &buf[leftcount], m_nWritePos * sizeof(T));
+                memcpy(m_pBuf, &buf[leftcount], m_nWritePos);
                 m_bFull = (m_nReadPos == m_nWritePos);
                 assert(m_nReadPos <= m_nBufSize);
                 assert(m_nWritePos <= m_nBufSize);
@@ -122,7 +122,7 @@ public:
             int leftcount = m_nReadPos - m_nWritePos;
             if(leftcount > count) {
                 // 有足够的剩余空间存放
-                memcpy(&m_pBuf[m_nWritePos], buf, count * sizeof(T));
+                memcpy(&m_pBuf[m_nWritePos], buf, count);
                 m_nWritePos += count;
                 m_bFull = (m_nReadPos == m_nWritePos);
                 assert(m_nReadPos <= m_nBufSize);
@@ -130,7 +130,7 @@ public:
                 return count;
             } else {
                 // 剩余空间不足时要丢弃后面的数据
-                memcpy(&m_pBuf[m_nWritePos], buf, leftcount * sizeof(T));
+                memcpy(&m_pBuf[m_nWritePos], buf, leftcount);
                 m_nWritePos += leftcount;
                 m_bFull = (m_nReadPos == m_nWritePos);
                 assert(m_bFull);
