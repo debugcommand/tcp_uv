@@ -106,7 +106,7 @@ int test_tcpclient::RunClient(std::string ip,int port,int cli_count)
         }
         call_time++;
         ProfileReport(curTime);
-        usleep(1000);
+        sleep(1);
     }
     return 0;
 }
