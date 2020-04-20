@@ -6,3 +6,4 @@
 *.user
 /Temp
 *.exe
+/tcp_uv/build
