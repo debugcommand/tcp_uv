@@ -1,0 +1,20 @@
+cmake_minimum_required(VERSION 2.8)
+project(tcp_uv)
+
+include_directories(
+	${CMAKE_CURRENT_SOURCE_DIR}
+	inc
+       	uvnet
+	)
+
+#message($(CMAKE_CURRENT_SOURCE_DIR))
+#message($(CMAKE_CURRENT_BINARY_DIR))
+
+file(GLOB SRC_REDIS "*.cpp" "redis/*.cpp")
+file(GLOB SRC_LIST "*.cpp" "src/*.cpp")
+file(GLOB SRC_UVNET "*.cpp" "uvnet/*.cpp")
+
+#link_directories(/usr/local/lib)
+
+add_executable(tcp_uv ${SRC_LIST} ${SRC_UVNET})
+target_link_libraries(tcp_uv /usr/local/lib/libuv.a dl  pthread)

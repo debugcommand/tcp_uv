@@ -1,3 +1,4 @@
+#if 0
 #ifndef _TEST_REDIS_H_
 #define _TEST_REDIS_H_
 #include "redis/hiredis.h"
@@ -26,4 +27,4 @@ private:
     TCPClient*                pClient;
 };
 #endif // !_TEST_REDIS_H_
-
+#endif

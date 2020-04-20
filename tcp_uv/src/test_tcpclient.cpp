@@ -1,10 +1,15 @@
 ﻿#include "test_tcp.h"
 #include <sstream>
-#ifdef _WIN32
-#include <windows.h>
-#include <MMsystem.h>
-#pragma comment(lib,"winmm.lib")
+#include <chrono>
+#ifdef WIN32
+#else
+#include <unistd.h>
 #endif
+
+static __int64_t GetTime()
+{
+	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
 
 static int call_time = 0;
 test_tcpclient::test_tcpclient()
@@ -34,10 +39,10 @@ void test_tcpclient::ReadCB(const MessageHeader& header, const unsigned char* bu
 #endif // 0
     char senddata[256] = {0};
 	TCPClient* client = (TCPClient*)userdata;
-    DWORD curT = timeGetTime();
-    unsigned long sendtime = atol((const char*)buf);
-    unsigned long pingtime = curT - sendtime;
-    fprintf(stdout, "recv server:client(%p) ping(%ld-%ld-%ld)\n", client, curT,sendtime, pingtime);
+    int64_t curT = GetTime();
+    int64_t sendtime = atoll((const char*)buf);
+    int64_t  pingtime = curT - sendtime;
+    fprintf(stdout, "recv server:client(%p) ping(%lld-%lld-%lld)\n", client, curT,sendtime, pingtime);
 #if 0
     if (rand() % 2) {
         NetPacket tmppack = packet;
@@ -73,10 +78,10 @@ int test_tcpclient::RunClient(std::string ip,int port,int cli_count)
     }    
     
     while (!is_exist) {
-        DWORD curTime = timeGetTime();
+        int64_t curTime = GetTime();
         MessageHeader header;
         header.type = 1;
-        sprintf(senddata, "%ld", curTime);
+        sprintf(senddata, "%lld", curTime);
         header.datalen = header.datalen = (std::min)(strlen(senddata), sizeof(senddata) - 1);
         for (int i = 0; i < clientsize; ++i) {
             if (pClients[i]&& !pClients[i]->IsClosed()&& !pClients[i]->IsHangUp())
@@ -101,7 +106,7 @@ int test_tcpclient::RunClient(std::string ip,int port,int cli_count)
         }
         call_time++;
         ProfileReport(curTime);
-        Sleep(1000);
+        usleep(1000);
     }
     return 0;
 }
@@ -112,10 +117,9 @@ void test_tcpclient::ProfileReport(int64_t tCurrTime) {
     {
         return;
     }
+    /*
     start_time = tCurrTime;
     wstringstream strTitle;
     strTitle << "ping=" << maxPing;
-    //strTitle << "game" << " id=" << theConfig.GetKernelConfig()->un32ServerId << " fps=" << fps << " online=" << theRTCtlr.GetOnlineCount()
-    //    << " offline=" << theRTCtlr.GetOfflineMapSize() << " account=" << theRTCtlr.GetAccountMapSize();
-    SetConsoleTitle(strTitle.str().c_str());
+    SetConsoleTitle(strTitle.str().c_str());*/
 }

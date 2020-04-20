@@ -5,9 +5,17 @@
 #include <string>
 #include "uvnet/tcpclient.h"
 #include "uvnet/tcpserver.h"
+//#include <chrono>
 
 using namespace std;
 using namespace UVNet;
+
+/*
+__int64_t GetTime()
+{
+	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
+*/
 class test_tcpclient
 {
 public:

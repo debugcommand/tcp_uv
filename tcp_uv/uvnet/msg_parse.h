@@ -12,6 +12,7 @@
 #include "openssl/md5.h"
 #include "net_msg.h"
 #include "thread_uv.h"//for GetUVError
+#include <string.h>
 #if defined (WIN32) || defined(_WIN32)
 #include <windows.h>
 #define ThreadSleep(ms) Sleep(ms);//睡眠ms毫秒
