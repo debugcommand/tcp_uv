@@ -11,8 +11,8 @@ class CircularBuffer
 {
 public:
     CircularBuffer(int capacity)
-        :m_nBufSize(capacity),m_nReadPos(0),m_nWritePos(0)
-        ,m_bEmpty(true),m_bFull(false) {
+        :m_bEmpty(true), m_bFull(false)
+        , m_nBufSize(capacity), m_nReadPos(0), m_nWritePos(0) {
         m_pBuf = new char[m_nBufSize];
     }
     virtual ~CircularBuffer() {

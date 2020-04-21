@@ -31,7 +31,7 @@ typedef void (*CBClose)(void* userdata);
 class MessageParse
 {
 public:
-    MessageParse(): msg_cb_(nullptr), cb_userdata_(nullptr),data_cb_(nullptr) {
+    MessageParse(): msg_cb_(nullptr), data_cb_(nullptr), call_close_(nullptr),cb_userdata_(nullptr) {
         thread_readdata = uv_buf_init((char*)malloc(MAX_BUFFER_SIZE), MAX_BUFFER_SIZE); //负责从circulebuffer_读取数据
         thread_realdata = uv_buf_init((char*)malloc(MAX_BUFFER_SIZE), MAX_BUFFER_SIZE); //负责从circulebuffer_读取有效data部分
         usedlen = 0;//readdata有效数据长度
