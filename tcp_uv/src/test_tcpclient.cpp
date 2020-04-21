@@ -1,14 +1,8 @@
 ﻿#include "test_tcp.h"
 #include <sstream>
 #include <chrono>
-#ifdef WIN32
-typedef __int64 INT64;
-#else
-#include <unistd.h>
-typedef int64_t INT64;
-#endif
 
-static int64_t  GetTime()
+static INT64 GetTime()
 {
 	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
@@ -30,7 +24,7 @@ void test_tcpclient::CloseCB(int clientid, void* userdata)
     client->Close();
 }
 
-static unsigned long maxPing = 0;
+static INT64 maxPing = 0;
 void test_tcpclient::ReadCB(const MessageHeader& header, const unsigned char* buf, void* userdata)
 {
 #if 0
@@ -41,20 +35,11 @@ void test_tcpclient::ReadCB(const MessageHeader& header, const unsigned char* bu
 #endif // 0
     char senddata[256] = {0};
 	TCPClient* client = (TCPClient*)userdata;
-    int64_t curT = GetTime();
-    int64_t sendtime = atoll((const char*)buf);
-    int64_t  pingtime = curT - sendtime;
+    INT64 curT = GetTime();
+    INT64 sendtime = atoll((const char*)buf);
+    INT64  pingtime = curT - sendtime;
     fprintf(stdout, "recv server:client(%p) ping(%lld-%lld-%lld)\n", client, curT,sendtime, pingtime);
-#if 0
-    if (rand() % 2) {
-        NetPacket tmppack = packet;
-        tmppack.datalen = (std::min)(strlen(senddata), sizeof(senddata) - 1);
-        std::string retstr = PacketData(tmppack, (const unsigned char*)senddata);
-        if (client->Send(&retstr[0], retstr.length()) <= 0) {
-            printf("ReadCB:(%p)send error.%s\n", client, client->GetLastErrMsg());
-        }
-    }
-#endif
+
     client->SetHangeUp(false);
     if (pingtime > maxPing)
     {
@@ -80,7 +65,7 @@ int test_tcpclient::RunClient(std::string ip,int port,int cli_count)
     }    
     
     while (!is_exist) {
-        int64_t curTime = GetTime();
+        INT64 curTime = GetTime();
         MessageHeader header;
         header.type = 1;
         sprintf(senddata, "%lld", curTime);
@@ -88,40 +73,32 @@ int test_tcpclient::RunClient(std::string ip,int port,int cli_count)
         for (int i = 0; i < clientsize; ++i) {
             if (pClients[i]&& !pClients[i]->IsClosed()&& !pClients[i]->IsHangUp())
             {
-                //memset(senddata, 0, sizeof(senddata));
-                //sprintf(senddata, "main loop: client(%p) call %d", pClients[i], call_time);
-                //packet.datalen = (std::min)(strlen(senddata), sizeof(senddata) - 1);
                 std::string str = PackData(header, (const unsigned char*)senddata);
                 if (!pClients[i]->Send(&str[0], str.length())) {
                     printf("main loop:(%p)send error.%s\n", pClients[i], pClients[i]->GetLastErrMsg());
                 }
                 else {
                     pClients[i]->SetHangeUp(true);
-                    //fprintf(stdout,"发送的数据为:\n");
-                    //         for (int i=0; i<str.length(); ++i) {
-                    //             fprintf(stdout,"%02X",(unsigned char)str[i]);
-                    //         }
-                    //         fprintf(stdout,"\n");
-                    //fprintf(stdout, "main loop: send succeed:%s-%d\n", senddata, packet.datalen);
                 }           
             }
         }
         call_time++;
         ProfileReport(curTime);
-        sleep(1);
+        uv_thread_sleep(1000);
     }
     return 0;
 }
 
-static int64_t start_time = 0;
-void test_tcpclient::ProfileReport(int64_t tCurrTime) {
+static INT64 start_time = 0;
+void test_tcpclient::ProfileReport(INT64 tCurrTime) {
     if (tCurrTime - start_time < 5000)
     {
         return;
     }
-    /*
+#ifdef WIN32
     start_time = tCurrTime;
     wstringstream strTitle;
     strTitle << "ping=" << maxPing;
-    SetConsoleTitle(strTitle.str().c_str());*/
+    SetConsoleTitle(strTitle.str().c_str());
+#endif // WIN32
 }

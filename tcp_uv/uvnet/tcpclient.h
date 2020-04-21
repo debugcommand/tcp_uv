@@ -148,7 +148,7 @@ private:
 	void StopReconnect(void);
 	uv_timer_t reconnect_timer_;
 	bool isreconnecting_;
-	int64_t repeat_time_;//repeat reconnect time. y=2x(x=1..)
+	INT64 repeat_time_;//repeat reconnect time. y=2x(x=1..)
 
     std::string connectip_;
     int connectport_;

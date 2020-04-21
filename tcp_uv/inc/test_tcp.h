@@ -5,17 +5,10 @@
 #include <string>
 #include "uvnet/tcpclient.h"
 #include "uvnet/tcpserver.h"
-//#include <chrono>
 
 using namespace std;
 using namespace UVNet;
 
-/*
-__int64_t GetTime()
-{
-	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-}
-*/
 class test_tcpclient
 {
 public:
@@ -25,7 +18,7 @@ public:
     static void CloseCB(int clientid, void* userdata);
     static void ReadCB(const MessageHeader& header, const unsigned char* buf, void* userdata);    
     int  RunClient(std::string ip, int port, int cli_count);
-    void ProfileReport(int64_t tCurrTime);
+    void ProfileReport(INT64 tCurrTime);
 private:
     char serverip[128];
     bool is_exist = false;    
@@ -40,7 +33,7 @@ public:
     static void CloseCB(int clientid, void* userdata);
     static void NewConnect(int clientid, void* userdata);
     int RunServer(int port);
-    void ProfileReport(int64_t tCurrTime);
+    void ProfileReport(INT64 tCurrTime);
 private:
     bool is_eist;
     int call_time;

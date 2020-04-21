@@ -22,12 +22,12 @@
 #define uv_thread_close(t) (CloseHandle(t)!=FALSE)
 #define uv_thread_sleep(ms) Sleep(ms);//睡眠ms毫秒
 #define uv_thread_id        GetCurrentThreadId//得到当前线程句柄
-
+typedef __int64 INT64;
 #elif defined(__linux__)
 #define uv_thread_close(t) ()
 #define uv_thread_sleep(ms) usleep((ms) * 1000)
 #define uv_thread_id pthread_self//得到当前线程句柄
-
+typedef int64_t INT64;
 #else
 #error "no supported os"
 #endif
@@ -285,7 +285,7 @@ public:
         uv_thread_join(&thread_);
         isrunning_ = false;
     }
-    void Sleep(int64_t millsec)
+    void Sleep(INT64 millsec)
     {
         uv_thread_sleep(millsec);
     }

@@ -1,15 +1,8 @@
 ﻿#include "test_tcp.h"
 #include <sstream>
 #include <chrono>
-#ifdef _WIN32
-#include <windows.h>
-#include <MMsystem.h>
-#pragma comment(lib,"winmm.lib")
-#else
-#include <unistd.h>
-#endif
 
-static __int64_t GetTime()
+static INT64 GetTime()
 {
 	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
@@ -37,18 +30,19 @@ void test_tcpserver::NewConnect(int clientid, void* userdata)
     ((TCPServer *)userdata)->SetRecvCB(clientid,nullptr,nullptr);
 }
 
-static __int64_t start_time = 0;
-void test_tcpserver::ProfileReport(__int64_t tCurrTime)
+static INT64 start_time = 0;
+void test_tcpserver::ProfileReport(INT64 tCurrTime)
 {
     if (tCurrTime - start_time < 5000)
     {
         return;
     }
-    /*
+#ifdef WIN32
     start_time = tCurrTime;
     wstringstream strTitle;
     strTitle << "client=" << pServer->client_count() << " avia=" << pServer->avai_count() << " wparam=" << pServer->wparam_count();
-    SetConsoleTitle(strTitle.str().c_str());*/
+    SetConsoleTitle(strTitle.str().c_str());
+#endif // WIN32
 }
 
 int test_tcpserver::RunServer(int port)
@@ -63,7 +57,7 @@ int test_tcpserver::RunServer(int port)
     fprintf(stdout,"server running.\n");
     while(!is_eist) {
         ProfileReport(GetTime());
-        usleep(1);
+        uv_thread_sleep(1);
     }
     return 0;
 }
