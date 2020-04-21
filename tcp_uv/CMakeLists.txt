@@ -15,6 +15,10 @@ file(GLOB SRC_LIST "*.cpp" "src/*.cpp")
 file(GLOB SRC_UVNET "*.cpp" "uvnet/*.cpp")
 
 #link_directories(/usr/local/lib)
-
+if(${CMAKE_BUILD_TYPE} MATCHES "debug")
+	set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g2 -ggdb")
+	set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
+endif()
+message(${CMAKE_BUILD_TYPE})
 add_executable(tcp_uv ${SRC_LIST} ${SRC_UVNET})
 target_link_libraries(tcp_uv /usr/local/lib/libuv.a dl  pthread)

@@ -2,11 +2,13 @@
 #include <sstream>
 #include <chrono>
 #ifdef WIN32
+typedef __int64 INT64;
 #else
 #include <unistd.h>
+typedef int64_t INT64;
 #endif
 
-static __int64_t GetTime()
+static int64_t  GetTime()
 {
 	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
