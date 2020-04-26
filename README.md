@@ -5,7 +5,7 @@
 
 支持：x86、x64|windwos and linux
 
-IDE：vs2017，会有CMake支持（敬请期待，有空再做 =.=）
+IDE：vs2017 and CMakeLists.txt
 
 目录介绍：
 
