@@ -82,10 +82,10 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)\inc;$(ProjectDir)..\library\include;$(ProjectDir)..\library\include\libuv;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <PostBuildEvent>
       <Command>mkdir "$(ProjectDir)..\bin\"
@@ -143,11 +143,15 @@ xcopy/AFRSY "$(TargetPath)" "$(ProjectDir)..\bin\"
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="redis\async.cpp" />
-    <ClCompile Include="redis\dict.c" />
-    <ClCompile Include="redis\hiredis.cpp" />
-    <ClCompile Include="redis\sds.cpp" />
-    <ClCompile Include="redis\zmalloc.cpp" />
+    <ClCompile Include="hiredis\alloc.c" />
+    <ClCompile Include="hiredis\async.c" />
+    <ClCompile Include="hiredis\dict.c" />
+    <ClCompile Include="hiredis\hiredis.c" />
+    <ClCompile Include="hiredis\net.c" />
+    <ClCompile Include="hiredis\read.c" />
+    <ClCompile Include="hiredis\sds.c" />
+    <ClCompile Include="hiredis\sockcompat.c" />
+    <ClCompile Include="hiredis\ssl.c" />
     <ClCompile Include="src\test.cpp" />
     <ClCompile Include="src\test_redis.cpp" />
     <ClCompile Include="src\test_tcpclient.cpp" />
@@ -156,13 +160,29 @@ xcopy/AFRSY "$(TargetPath)" "$(ProjectDir)..\bin\"
     <ClCompile Include="uvnet\tcpserver.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="hiredis\adapters\ae.h" />
+    <ClInclude Include="hiredis\adapters\glib.h" />
+    <ClInclude Include="hiredis\adapters\ivykis.h" />
+    <ClInclude Include="hiredis\adapters\libev.h" />
+    <ClInclude Include="hiredis\adapters\libevent.h" />
+    <ClInclude Include="hiredis\adapters\libuv.h" />
+    <ClInclude Include="hiredis\adapters\macosx.h" />
+    <ClInclude Include="hiredis\adapters\qt.h" />
+    <ClInclude Include="hiredis\alloc.h" />
+    <ClInclude Include="hiredis\async.h" />
+    <ClInclude Include="hiredis\async_private.h" />
+    <ClInclude Include="hiredis\dict.h" />
+    <ClInclude Include="hiredis\fmacros.h" />
+    <ClInclude Include="hiredis\hiredis.h" />
+    <ClInclude Include="hiredis\hiredis_ssl.h" />
+    <ClInclude Include="hiredis\net.h" />
+    <ClInclude Include="hiredis\read.h" />
+    <ClInclude Include="hiredis\sds.h" />
+    <ClInclude Include="hiredis\sdsalloc.h" />
+    <ClInclude Include="hiredis\sockcompat.h" />
+    <ClInclude Include="hiredis\win32.h" />
     <ClInclude Include="inc\test_redis.h" />
     <ClInclude Include="inc\test_tcp.h" />
-    <ClInclude Include="redis\async.h" />
-    <ClInclude Include="redis\dict.h" />
-    <ClInclude Include="redis\hiredis.h" />
-    <ClInclude Include="redis\sds.h" />
-    <ClInclude Include="redis\zmalloc.h" />
     <ClInclude Include="uvnet\net_base.h" />
     <ClInclude Include="uvnet\net_msg.h" />
     <ClInclude Include="uvnet\msg_parse.h" />

@@ -1,11 +1,12 @@
-#if 0
 #include "test_redis.h"
 #include <vector>
 #include <map>
+#include <signal.h>
+#include <functional>
+#include "uvnet\thread_uv.h"
 
 using namespace std;
 #define RedisCallBack(realCallBack, holder) std::bind(realCallBack, holder, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-static redisAsyncContextWrapper* pRedisAsyncContext = nullptr;
 
 struct SRedisTest
 {
@@ -26,101 +27,100 @@ struct SRedisTest
     //ps:no string ,no vector,map,list...
 };
 
+void AfterConnect(const redisAsyncContext *c, int status) {
+    if (status != REDIS_OK) {
+        printf("Error: %s\n", c->errstr);
+        return;
+    }
+    printf("Connected...\n");
+    test_redis* pTestRedis = (test_redis*)c->data;
+    pTestRedis->HMSETTest();
+}
+
+void AfterDisConnect(const redisAsyncContext *c, int status)
+{
+    if (status != REDIS_OK) {
+        printf("Error: %s\n", c->errstr);
+        return;
+    }
+    printf("Disconnected...\n");
+    delete c->data;
+}
+
+void  redisGetCallBack(redisAsyncContext *c, void *r, void *privdata)
+{
+    printf("redis Get CallBack! \n");
+    redisReply *reply = (redisReply *)r;
+    if (!c || reply->elements <= 0) {
+        printf("redis Get CallBack Error! \n");
+        return;
+    }
+    SRedisTest _RT;
+    fprintf(stdout, "Get SRedisTest:(%p)\n", &_RT);
+    memcpy(&_RT, reply->element[0]->str, reply->element[0]->len);
+}
+
+void  redisSetCallBack(redisAsyncContext *c, void *r, void *privdata)
+{
+    test_redis* pTR = (test_redis*)c->data;
+    printf("redis Set CallBack! \n");
+    SRedisTest* pRT = (SRedisTest*)privdata;
+    fprintf(stdout, "delete SRedisTest:(%p)\n", pRT);
+    delete pRT;
+
+    uv_thread_sleep(100);
+    pTR->HMGetTest();
+}
+
+
 test_redis::test_redis()
 {
-    
-    pClient = nullptr;
+    pRedisAsyncContext = nullptr;
+    uv_loop = nullptr;
 }
 
 test_redis::~test_redis()
 {
+    if (pRedisAsyncContext)
+    { 
+        redisAsyncFree(pRedisAsyncContext);
+    }
 }
 
 bool test_redis::Connect(char* host, unsigned short port) {
-    if (!pClient)
-    {
-        pClient = new TCPClient();
-        pClient->SetRecvBufCB(ReadCB, this);
-        pClient->SetClosedCB(CloseCB, this);
-        pClient->SetConnectedCB(AfterConnect, this);
-        if (!pClient->Connect(host, port,false,false)) {
-            printf("connect error:%s\n", pClient->GetLastErrMsg());
-            return false;
-        }
-        else {
-            printf("client(%p) connect succeed.\n", pClient);
-            return true;
-        }
+#ifndef _MSC_VER
+    signal(SIGPIPE, SIG_IGN);
+#endif // !MSVC    
+    redisAsyncContext *c = redisAsyncConnect("127.0.0.1", 6379);
+    if (c->err) {
+        /* Let *c leak for now... */
+        printf("Error: %s\n", c->errstr);
+        return false;
     }
-    return false;
+    if (pRedisAsyncContext)
+    {
+        redisAsyncFree(pRedisAsyncContext);
+    }
+    pRedisAsyncContext = c;
+    pRedisAsyncContext->data = this;
+
+    redisLibuvAttach(pRedisAsyncContext, uv_loop);
+    redisAsyncSetConnectCallback(pRedisAsyncContext, AfterConnect);
+    redisAsyncSetDisconnectCallback(pRedisAsyncContext, AfterDisConnect);
+    /*redisAsyncCommand(c, NULL, NULL, "SET key %b", argv[argc - 1], strlen(argv[argc - 1]));
+    redisAsyncCommand(c, getCallback, (char*)"end-1", "GET key");*/
+    return true;
 }
 
 void test_redis::RunRedis(char* host, unsigned short port) {
     
-    if (Connect(host, port))
+    uv_loop = uv_default_loop();
+    if (!Connect(host, port))
     {
-
-    }
-    while (true)
-    {
-        Sleep(1);
-    }
-}
-
-void test_redis::AfterConnect(void* userdata) {
-    test_redis* pTestRedis = (test_redis*)userdata;
-    if (!pRedisAsyncContext) {
-        pRedisAsyncContext = new redisAsyncContextWrapper();
-        pRedisAsyncContext->Init(std::bind(&TCPClient::Send, pTestRedis->pClient, std::placeholders::_1, std::placeholders::_2)
-            , std::bind(&TCPClient::Close, pTestRedis->pClient, std::placeholders::_1));
-    }
-    pRedisAsyncContext->SetConnected(true);
-
-    pTestRedis->HMSETTest();
-   
-}
-
-void test_redis::CloseCB(int clientid, void* userdata)
-{
-    test_redis* pTestRedis = (test_redis*)userdata;
-    if (!pRedisAsyncContext) {
-        pRedisAsyncContext->SetConnected(false);
-    }
-}
-
-void test_redis::ReadCB(const unsigned char* buf, unsigned int lenght, void* userdata)
-{
-    test_redis* pTestRedis = (test_redis*)userdata;
-    if (pRedisAsyncContext) {
-        int res = pRedisAsyncContext->redisAsyncReaderFeed((const char*)buf, lenght);
-        if (res != REDIS_OK) {
-            return;
-        }
-        pRedisAsyncContext->redisProcessCallbacks();
-    }
-}
-
-void  test_redis::redisGetCallBack(redisAsyncContext* predisAsyncContext, redisReply* predisReply, void* pData)
-{
-    printf("redis Get CallBack! \n");
-    if (!predisReply || predisReply->elements <= 0) {
-        printf("redis Get CallBack Error! \n");
+        printf("Error: %s\n");
         return;
     }
-    SRedisTest _RT;    
-    fprintf(stdout, "Get SRedisTest:(%p)\n", &_RT);
-    memcpy(&_RT, predisReply->element[0]->str, predisReply->element[0]->len);
-}
-
-void  test_redis::redisSetCallBack(redisAsyncContext* predisAsyncContext, redisReply* predisReply, void* pData)
-{
-    printf("redis Set CallBack! \n");
-    SRedisTest* pRT = (SRedisTest*)pData;
-    fprintf(stdout, "delete SRedisTest:(%p)\n", pRT);
-    delete pRT;
-
-    Sleep(1000);
-    HMGetTest();
+    uv_run(uv_loop, UV_RUN_DEFAULT);
 }
 
 void test_redis::HMSETTest()
@@ -128,16 +128,13 @@ void test_redis::HMSETTest()
     if (!pRedisAsyncContext) {
         return;
     }
-    if (!pRedisAsyncContext->CanbeUsed()) {
-        return;
-    }
     SRedisTest* pRT = new SRedisTest();
     fprintf(stdout, "new SRedisTest:(%p)\n", pRT);
     pRT->_init();
-    pRedisAsyncContext->redisAsyncCommand(RedisCallBack(&test_redis::redisSetCallBack, this), pRT,
+    redisAsyncCommand(pRedisAsyncContext, redisSetCallBack, pRT,
         "HMSET test "
         "value %b"//
-    , pRT,sizeof(SRedisTest));    
+    , pRT,sizeof(SRedisTest));
 }
 
 void test_redis::HMGetTest() {
@@ -145,11 +142,7 @@ void test_redis::HMGetTest() {
     if (!pRedisAsyncContext) {
         return;
     }
-    if (!pRedisAsyncContext->CanbeUsed()) {
-        return;
-    }
-    pRedisAsyncContext->redisAsyncCommand(RedisCallBack(&test_redis::redisGetCallBack, this), nullptr,
+    redisAsyncCommand(pRedisAsyncContext, redisGetCallBack, nullptr,
         "HMGET test "
         "value ");
 }
-#endif
