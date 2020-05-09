@@ -7,6 +7,7 @@
 
 IDE：vs2017 and CMakeLists.txt
 
+git submodule update --init
 目录介绍：
 
 bin---------运行环境，编译后可执行程序会自动复制
