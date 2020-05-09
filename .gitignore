@@ -7,3 +7,4 @@
 /Temp
 *.exe
 /tcp_uv/build
+/tcp_uv/hiredis/*
