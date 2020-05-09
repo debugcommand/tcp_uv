@@ -1,0 +1,3 @@
+[submodule "tcp_uv/hiredis"]
+	path = tcp_uv/hiredis
+	url = https://github.com/redis/hiredis.git
